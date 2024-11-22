@@ -1,0 +1,111 @@
+import os
+
+signed_in = False
+name = ""
+email = ""
+
+while not signed_in:
+    name = input("Enter Your Name, First And Last: ")
+    email = input("Enter Your School Email: ")
+    
+    # Sanitize email filename to avoid invalid characters
+    email_file = email.replace("@", "_at_").replace(".", "_dot_")
+    
+    with open(f"{email_file}.txt", 'w') as f:
+        f.write(f"Name: {name}\n")
+        f.write(f"Email: {email}\n")
+    
+    signed_in = True
+
+while signed_in:
+    command = input("Enter Command (type 'help'): ").lower().strip()
+    
+    # Log the command to the user's file
+    email_file = email.replace("@", "_at_").replace(".", "_dot_")
+    with open(f"{email_file}.txt", 'a') as f:
+        f.write(f"Command: {command}\n")
+    
+    if command == "help":
+        os.system('clear')  # Use 'cls' for Windows
+        print("Available Commands:")
+        print("Create: create a site")
+        print("Search: search for something")
+        print("Edit: edit your site")
+        print("")
+    
+    elif command == "search":
+        os.system('clear')  # Use 'cls' for Windows if needed
+        search = input("What do you want to search for?: ").strip()
+        
+        # If searching for a specific file
+        if search.endswith(".msww"):
+            try:
+                with open(search, 'r') as f:
+                    site_content = f.read()
+                os.system('clear')  # Use 'cls' for Windows if needed
+                print("Site Content:")
+                print(site_content)
+            except FileNotFoundError:
+                print(f"Error: File '{search}' not found. Please check the name and try again.")
+        
+        # If searching for compatible site names
+        else:
+            try:
+                with open('SiteNames.txt', 'r') as sitenames:
+                    found_matches = False  # Flag to check if matches are found
+                    for line in sitenames:
+                        search_compatibility = 0
+                        parts = search.split(" ")
+                        for part in parts:
+                            if part.lower() in line.lower():
+                                search_compatibility += 1
+                        if search_compatibility > 0:
+                            found_matches = True
+                            print(f"Site Name: {line.strip()}")
+                            print(f"Compatibility: {search_compatibility}")
+                            print()
+                    
+                    if not found_matches:
+                        print("No matches found. Try refining your search.")
+                    else:
+                        print("To look up a specific site, enter the command 'search' again and enter the sitename.msww")
+            except FileNotFoundError:
+                print("Error: 'SiteNames.txt' not found. Ensure the file exists and try again.")
+
+
+    elif command == "create":
+        os.system('clear')  # Use 'cls' for Windows
+        site_name = input("Enter the site name (e.g., mysite.msww): ").strip()
+        with open(site_name, 'w') as f:
+            content = input("Enter the content for your site: ")
+            f.write(content)
+            f = open('SiteNames.txt', 'a')
+            f.write(site_name.replace(".msww", ""), "\n")
+            f.close()
+            f = open('sites', 'a')
+            f.write(site_name, "\n")
+            f.close()
+        print(f"Site '{site_name}' created successfully!")
+    
+    elif command == "edit":
+        os.system('clear')  # Use 'cls' for Windows
+        site_name = input("Enter the site name to edit (e.g., mysite.msww): ").strip()
+        try:
+            with open(site_name, 'r') as f:
+                current_content = f.read()
+            print("Current Content:")
+            print(current_content)
+            
+            new_content = input("Enter the new content: ")
+            with open(site_name, 'w') as f:
+                f.write(new_content)
+            print(f"Site '{site_name}' updated successfully!")
+        except FileNotFoundError:
+            print(f"Error: Site '{site_name}' not found.")
+    
+    elif command == "exit":
+        print("Signing out...")
+        signed_in = False
+
+    else:
+        print("Unknown command. Type 'help' for a list of commands.")
